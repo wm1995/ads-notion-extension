@@ -1,0 +1,45 @@
+body {
+    background: #fff;
+    color: rgb(21, 20, 26);
+    height: 250px;
+    margin: 5px;
+}
+  
+.option {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+label {
+    color: rgb(21, 20, 26);
+}
+
+input {
+    color: rgb(21, 20, 26);
+    border: 1px solid rgb(70, 70, 69);
+    border-radius: 5px;
+    height: 31px;
+    padding: 5px;
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 20px;
+    flex-basis: 400px;
+    flex-shrink: 3;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: rgb(35, 34, 43);
+        color: rgb(191, 191, 201);
+    }
+
+    label {
+        color: rgb(191, 191, 201);
+    }
+
+    input {
+        background-color: rgb(43, 42, 51);
+        color: rgb(201, 209, 217);
+    }
+}
