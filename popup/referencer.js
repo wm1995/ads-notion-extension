@@ -231,13 +231,15 @@ function setupPage(){
     // Find and update the ADS Bibcode
     updateADSBibcode();
 
-    getADSBibcode().then((bibcode) => {lookupRef(bibcode).then((data) => {
-        document.querySelector("#citename").value = getDefaultCitename(data);
-    }).catch((e) => {
-        displayError("Error: could not access ADS API");
-        throw e;
+    // Construct default citename from ADS data
+    getADSBibcode().then((bibcode) => {
+        lookupRef(bibcode).then((data) => {
+            document.querySelector("#citename").value = getDefaultCitename(data);
+        }).catch((e) => {
+            displayError("Error: could not access ADS API");
+            throw e;
+        });
     });
-});
 
     // Add event listeners
     document.getElementById("addbtn").addEventListener("click", addRef)
