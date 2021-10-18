@@ -216,7 +216,7 @@ async function addRef(){
     }
 }
 
-function setupPage(){
+async function setupPage(){
     resetMessages();
 
     // Check that credentials are saved
@@ -232,14 +232,12 @@ function setupPage(){
     updateADSBibcode();
 
     // Construct default citename from ADS data
-    getADSBibcode().then((bibcode) => {
-        lookupRef(bibcode).then((data) => {
-            document.querySelector("#citename").value = getDefaultCitename(data);
-        }).catch((e) => {
-            displayError("Error: could not access ADS API");
-            throw e;
-        });
+    const bibcode = await getADSBibcode();
+    const adsData = await lookupRef(bibcode).catch((e) => {
+        displayError("Error: could not access ADS API");
+        console.error(e);
     });
+    document.querySelector("#citename").value = getDefaultCitename(adsData);
 
     // Add event listeners
     document.getElementById("addbtn").addEventListener("click", addRef)
