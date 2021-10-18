@@ -30,9 +30,11 @@ function displaySuccess(){
     setTimeout(window.close, 2000);
 }
 
-function displayWarning(){
+function displayWarning(msg = "An unknown error occurred"){
     resetMessages();
     document.getElementById("warning").style.display = "block";
+    document.getElementById("warning").innerText = msg;
+    setTimeout(window.close, 5000);
 }
 
 function getAuthorStr(author){
