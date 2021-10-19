@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Notion/ADS Referencing Extension",
-  "version": "0.1",
+  "version": "0.1.1",
 
   "description": "Adds a reference from the NASA ADS system to a database in Notion, for keeping track of references and referencing.",
   "icons": {
