@@ -5,7 +5,8 @@ const fields = [
     "title", 
     "bibcode", 
     "first_author_norm", 
-    "author_norm"
+    "author_norm",
+    "alternate_bibcode"
 ];
 
 function resetMessages(){
@@ -30,9 +31,11 @@ function displaySuccess(){
     setTimeout(window.close, 2000);
 }
 
-function displayWarning(){
+function displayWarning(msg = "An unknown error occurred"){
     resetMessages();
     document.getElementById("warning").style.display = "block";
+    document.getElementById("warning").innerText = msg;
+    setTimeout(window.close, 5000);
 }
 
 function getAuthorStr(author){
@@ -216,7 +219,48 @@ async function addRef(){
     }
 }
 
-function setupPage(){
+async function checkExistingRef(bibcodeList){
+    // Load Notion API key and db id from storage
+    const storedCreds = await browser.storage.sync.get(["notion_key", "notion_db"]);
+
+    // Search Notion db by making an API request
+    const headers = {
+        "Authorization": "Bearer " + storedCreds.notion_key,
+        "Content-Type": "application/json",
+        "Notion-Version": "2021-08-16"
+    };
+
+    const notionData = {
+        "filter": {
+            "or": bibcodeList.map((bibcode) => {
+                return {
+                    "property": "ADS Bibcode",
+                    "text": {
+                        "equals": bibcode
+                    }
+                };
+            })
+        }
+    };
+
+    // Make request
+    const requestURL = "https://api.notion.com/v1/databases/" + storedCreds.notion_db + "/query";
+    const response = await fetch(requestURL, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(notionData),
+    });
+
+    // Test if response is OK
+    if(!response.ok){
+        throw new Error("Notion network response error")
+    } else {
+        // Response is OK, return
+        return response.json().then(data => data.results.length);
+    }
+}
+
+async function setupPage(){
     resetMessages();
 
     // Check that credentials are saved
@@ -231,13 +275,28 @@ function setupPage(){
     // Find and update the ADS Bibcode
     updateADSBibcode();
 
-    getADSBibcode().then((bibcode) => {lookupRef(bibcode).then((data) => {
-        document.querySelector("#citename").value = getDefaultCitename(data);
-    }).catch((e) => {
+    // Get ADS data from bibcode
+    const bibcode = await getADSBibcode();
+    const adsData = await lookupRef(bibcode).catch((e) => {
         displayError("Error: could not access ADS API");
-        throw e;
+        console.error(e);
     });
-});
+
+    // Combine all bibcodes into list
+    var bibcodeList = [adsData.bibcode];
+    if (adsData.alternate_bibcode)
+        bibcodeList = bibcodeList.concat(adsData.alternate_bibcode);
+
+    // Raise warning if paper is already in db
+    if (await checkExistingRef(bibcodeList)){
+        displayWarning("Paper already saved to Notion")
+        document.getElementById("citename").disabled = true;
+        document.getElementById("addbtn").disabled = true;
+        return;
+    }
+
+    // Set default citename
+    document.querySelector("#citename").value = getDefaultCitename(adsData);
 
     // Add event listeners
     document.getElementById("addbtn").addEventListener("click", addRef)
