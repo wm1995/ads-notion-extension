@@ -67,7 +67,7 @@ async function getADSBibcode(){
     if(url.hostname == "ui.adsabs.harvard.edu" && urlpath[1] == "abs"){
         // URL is an ADS paper link, so we can isolate the bibcode
         const bibcode = urlpath[2];
-        return bibcode;
+        return decodeURIComponent(bibcode);
     } else {
         throw new Error("invalid URL");
     }
@@ -80,7 +80,7 @@ async function lookupRef(bibcode){
     // Make a request to the NASA API, return a JSON of data
     // Construct request URL
     const url = "https://api.adsabs.harvard.edu/v1/search/query?q=bibcode:"
-        + bibcode + "&fl=" + fields.join(",");
+        + encodeURIComponent(bibcode) + "&fl=" + fields.join(",");
 
     // Make request
     const response = await fetch(url, {
