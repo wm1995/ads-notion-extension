@@ -1,15 +1,15 @@
 const fields = [
-    "first_author", 
-    "year", 
-    "author", 
-    "title", 
-    "bibcode", 
-    "first_author_norm", 
+    "first_author",
+    "year",
+    "author",
+    "title",
+    "bibcode",
+    "first_author_norm",
     "author_norm",
     "alternate_bibcode"
 ];
 
-function resetMessages(){
+function resetMessages() {
     document.getElementById("failure").style.display = "none";
     document.getElementById("warning").style.display = "none";
     document.getElementById("success").style.display = "none";
@@ -17,13 +17,13 @@ function resetMessages(){
     document.getElementById("addbtn").disabled = false;
 }
 
-function displayError(msg = "An unknown error occurred"){
-    resetMessages();    
+function displayError(msg = "An unknown error occurred") {
+    resetMessages();
     document.getElementById("failure").style.display = "block";
     document.getElementById("failure").innerText = msg;
 }
 
-function displaySuccess(){
+function displaySuccess() {
     resetMessages();
     document.getElementById("citename").disabled = true;
     document.getElementById("addbtn").disabled = true;
@@ -31,40 +31,40 @@ function displaySuccess(){
     setTimeout(window.close, 2000);
 }
 
-function displayWarning(msg = "An unknown error occurred"){
+function displayWarning(msg = "An unknown error occurred") {
     resetMessages();
     document.getElementById("warning").style.display = "block";
     document.getElementById("warning").innerText = msg;
     setTimeout(window.close, 5000);
 }
 
-function getAuthorStr(author){
+function getAuthorStr(author) {
     // Convert name from "Last, First I." to "First I. Last" 
     return author.split(",").reverse().join(" ").trim()
 }
 
-function getDefaultCitename(data){
+function getDefaultCitename(data) {
     let first_author = data.first_author.split(",")[0];
     return first_author + ":" + data.year;
 }
 
-function getAuthorOptions(authors){
+function getAuthorOptions(authors) {
     var optionList = new Array();
-    authors.forEach(author => optionList.push({"name": getAuthorStr(author)}))
+    authors.forEach(author => optionList.push({ "name": getAuthorStr(author) }))
     return optionList;
 }
 
-async function getADSBibcode(){
+async function getADSBibcode() {
     // Get URL of current tab
     const url = await browser.tabs.query(
-        {active: true, currentWindow: true}
+        { active: true, currentWindow: true }
     ).then(tabs => new URL(tabs[0].url));
 
     // Split URL path
     const urlpath = url.pathname.split("/");
 
     // Test for valid URL
-    if(url.hostname == "ui.adsabs.harvard.edu" && urlpath[1] == "abs"){
+    if (url.hostname == "ui.adsabs.harvard.edu" && urlpath[1] == "abs") {
         // URL is an ADS paper link, so we can isolate the bibcode
         const bibcode = urlpath[2];
         return decodeURIComponent(bibcode);
@@ -73,7 +73,7 @@ async function getADSBibcode(){
     }
 }
 
-async function lookupRef(bibcode){
+async function lookupRef(bibcode) {
     // Load ADS API key from storage
     const storedCreds = await browser.storage.sync.get("ads_key");
 
@@ -84,11 +84,11 @@ async function lookupRef(bibcode){
 
     // Make request
     const response = await fetch(url, {
-        headers:{"Authorization": "Bearer:" + storedCreds.ads_key}
+        headers: { "Authorization": "Bearer " + storedCreds.ads_key }
     });
 
     // Test if response is OK (could come back as a 400/429 code for too many requests)
-    if(!response.ok){
+    if (!response.ok) {
         throw new Error("ADS network response error")
     } else {
         // Response is OK, return the data
@@ -96,7 +96,7 @@ async function lookupRef(bibcode){
     }
 }
 
-async function addToNotion(adsData, citekey){
+async function addToNotion(adsData, citekey) {
     // Load Notion API key and db id from storage
     const storedCreds = await browser.storage.sync.get(["notion_key", "notion_db"]);
 
@@ -126,7 +126,7 @@ async function addToNotion(adsData, citekey){
                     "name": adsData.first_author.split(",")[0]
                 }
             },
-            "Year": {"number": Number(adsData.year)},
+            "Year": { "number": Number(adsData.year) },
             "Authors": {
                 "multi_select": getAuthorOptions(adsData.author)
             },
@@ -143,7 +143,7 @@ async function addToNotion(adsData, citekey){
             "ADS Bibcode": {
                 "rich_text": [
                     {
-                        "text":{
+                        "text": {
                             "content": adsData.bibcode
                         }
                     }
@@ -160,7 +160,7 @@ async function addToNotion(adsData, citekey){
                     "name": getAuthorStr(adsData.first_author_norm)
                 }
             }
-        } 
+        }
     };
 
     // Make request
@@ -171,7 +171,7 @@ async function addToNotion(adsData, citekey){
     });
 
     // Test if response is OK
-    if(!response.ok){
+    if (!response.ok) {
         throw new Error("Notion network response error")
     } else {
         // Response is OK, return 
@@ -179,7 +179,7 @@ async function addToNotion(adsData, citekey){
     }
 }
 
-async function updateADSBibcode(){
+async function updateADSBibcode() {
     // Update the current ADS Bibcode text
     const bibcode = await getADSBibcode().catch((e) => {
         displayError("Error: could not find ADS bibcode");
@@ -190,7 +190,7 @@ async function updateADSBibcode(){
     document.getElementById("ads_bibcode").innerText = bibcode;
 }
 
-async function addRef(){
+async function addRef() {
     if (document.activeElement instanceof HTMLElement)
         document.activeElement.blur();
     document.getElementById("citename").disabled = true;
@@ -219,7 +219,7 @@ async function addRef(){
     }
 }
 
-async function checkExistingRef(bibcodeList){
+async function checkExistingRef(bibcodeList) {
     // Load Notion API key and db id from storage
     const storedCreds = await browser.storage.sync.get(["notion_key", "notion_db"]);
 
@@ -252,7 +252,7 @@ async function checkExistingRef(bibcodeList){
     });
 
     // Test if response is OK
-    if(!response.ok){
+    if (!response.ok) {
         throw new Error("Notion network response error")
     } else {
         // Response is OK, return
@@ -260,12 +260,12 @@ async function checkExistingRef(bibcodeList){
     }
 }
 
-async function setupPage(){
+async function setupPage() {
     resetMessages();
 
     // Check that credentials are saved
     browser.storage.sync.get().then((res) => {
-        if(!(res.ads_key && res.notion_key && res.notion_db)){
+        if (!(res.ads_key && res.notion_key && res.notion_db)) {
             displayError("Error: no saved credentials");
             document.getElementById("citename").disabled = true;
             document.getElementById("addbtn").disabled = true;
@@ -288,7 +288,7 @@ async function setupPage(){
         bibcodeList = bibcodeList.concat(adsData.alternate_bibcode);
 
     // Raise warning if paper is already in db
-    if (await checkExistingRef(bibcodeList)){
+    if (await checkExistingRef(bibcodeList)) {
         displayWarning("Paper already saved to Notion")
         document.getElementById("citename").disabled = true;
         document.getElementById("addbtn").disabled = true;
@@ -301,7 +301,7 @@ async function setupPage(){
     // Add event listeners
     document.getElementById("addbtn").addEventListener("click", addRef)
     document.querySelector("#citename").addEventListener("keyup", (e) => {
-        if (e.keyCode === 13){
+        if (e.keyCode === 13) {
             e.preventDefault();
             addRef();
         }
