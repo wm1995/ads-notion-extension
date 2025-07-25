@@ -1,33 +1,27 @@
 {
-
   "manifest_version": 2,
   "name": "Notion/ADS Referencing Extension",
-  "version": "0.1.1",
-
+  "version": "0.1.2",
   "description": "Adds a reference from the NASA ADS system to a database in Notion, for keeping track of references and referencing.",
   "icons": {
     "48": "icons/icon-48.png",
     "96": "icons/icon-96.png"
   },
-
   "permissions": [
     "*://api.adsabs.harvard.edu/*",
     "https://api.notion.com/v1/pages",
     "activeTab",
     "storage"
   ],
-
   "browser_action": {
     "default_icon": "icons/icon-32.png",
     "default_title": "Notion/ADS Referencer",
     "default_popup": "popup/referencer.html"
   },
-
   "options_ui": {
     "page": "options/options.html",
     "browser_style": true
   },
-
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
@@ -35,11 +29,9 @@
       }
     }
   },
-
   "browser_specific_settings": {
-    "gecko":{
+    "gecko": {
       "id": "{59fed966-8b31-5ec0-939d-0861640a55cc}"
     }
   }
-
 }
